@@ -15,6 +15,7 @@ class Cograph
 
   # [left side component, right side component] => operator
   # When the cograph is only a single node, there is no right side component
+  # This is, more or less, a di-co-tree as described in the paper (page 8).
   getter made_of : Hash(Array(Cograph), Symbol)
 
   def initialize(name : String, weight : Int32)
@@ -33,7 +34,7 @@ class Cograph
     puts "Created cograph with di-co-expression '#{@dicoexpr}'"
   end
 
-  def initialize(@nodes, @edges, @dicoexpr, @made_of)
+  protected def initialize(@nodes, @edges, @dicoexpr, @made_of)
     # Removes parentheses around single node di-co-expressions, e.g. (v1) => v1
     @dicoexpr = @dicoexpr.gsub(/\((v\d+)\)/, "\\1", true)
     @predecessors = Hash(String, Array(String)).new
