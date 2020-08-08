@@ -1,5 +1,6 @@
-# Computes the SSG problem for a given cograph graph and a given constraint c
 class SSG
+  # Solves SSG for a given graph and constraint.
+  # Returns the best value achievable, and the elements chosen to achieve that value.
   def self.solve_for_cograph(graph : Cograph, constraint : Int32)
     # This is used to find the index of certain di-co-expressions later in the program.
     # We do it here so we don't have to compute it a whole bunch of times.
@@ -13,18 +14,23 @@ class SSG
       end
     end
 
-    f, sol_sets = compute_f_and_solution_set(graph, constraint, searchable)
+    f, sol_sets = compute_f_and_solution_sets(graph, constraint, searchable)
 
     best_s = constraint.downto(0) do |i|
       if f[-1][i]
         break i
       end
-    end || 0 # This will never trigger, because the empty solution is always viable.
+    end.not_nil! # This will never trigger, because the empty solution is always viable.
+    # Sometimes you just have to appease the almighty type checker.
 
     return best_s, sol_sets[-1][best_s]
   end
 
-  private def self.compute_f_and_solution_set(graph : Cograph, c : Int32, searchable : Array(String))
+  # Computes the F function (as lined out in GKR20) for a given graph and constraint c.
+  # Also computes which elements need to be chosen to achieve the result of every field
+  # in the matrix F produces when combined with all the possible di-co-expressions of the graph.
+  # As lined out above, the `searchable` is only there to save some isntructions.
+  private def self.compute_f_and_solution_sets(graph : Cograph, c : Int32, searchable : Array(String))
     f = Array(Array(Bool)).new
     # Solution sets; contains the vertices chosen for any given possible solution.
     # nil indicates an unsolvable problem; [] indicates an empty solution.
@@ -39,7 +45,6 @@ class SSG
       0.upto(c) do |s|
         case operator
         when :create
-          # We can .first here because in :create there's only one cograph, which has only one node.
           if s == 0
             f[i][s] = true
             sol_sets[i][s] = Array(String).new

@@ -47,6 +47,10 @@ class Cograph
     puts "Created cograph with di-co-expression '#{@dicoexpr}'"
   end
 
+  def sources
+    @nodes.reject { |name, weight| @predecessors[name]? }
+  end
+
   # disjoint union
   def du(other : Cograph)
     check_unique_names(other)
