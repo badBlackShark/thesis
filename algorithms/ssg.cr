@@ -29,7 +29,7 @@ class SSG
   # Computes the F function (as lined out in GKR20) for a given graph and constraint c.
   # Also computes which elements need to be chosen to achieve the result of every field
   # in the matrix F produces when combined with all the possible di-co-expressions of the graph.
-  # As lined out above, the `searchable` is only there to save some isntructions.
+  # As lined out above, the `searchable` is only there to save some instructions.
   private def self.compute_f_and_solution_sets(graph : Cograph, c : Int32, searchable : Array(String))
     f = Array(Array(Bool)).new
     # Solution sets; contains the vertices chosen for any given possible solution.
