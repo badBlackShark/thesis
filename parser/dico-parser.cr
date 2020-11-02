@@ -32,9 +32,9 @@ module Dicoparser
       [  -1_i64,  -1_i64,  -1_i64,  0_i64,  -1_i64,  0_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  ],
       [  -1_i64,  -1_i64,  -1_i64,  0_i64,  -1_i64,  0_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  ],
       [  -1_i64,  -1_i64,  -1_i64,  0_i64,  -1_i64,  0_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  ],
+      [  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  4_i64,  -1_i64,  -1_i64,  -1_i64,  ],
+      [  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  5_i64,  -1_i64,  -1_i64,  -1_i64,  ],
       [  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  6_i64,  -1_i64,  -1_i64,  -1_i64,  ],
-      [  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  7_i64,  -1_i64,  -1_i64,  -1_i64,  ],
-      [  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  -1_i64,  8_i64,  -1_i64,  -1_i64,  -1_i64,  ],
     ]
     PARSE_STATE_TABLE = [
       [  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  0_i64,  ],
@@ -61,8 +61,6 @@ module Dicoparser
     ITEMS =  [
       { 0_i64, 1_i64 },
       { 1_i64, 1_i64 },
-      { 1_i64, 3_i64 },
-      { 1_i64, 3_i64 },
       { 1_i64, 3_i64 },
       { 2_i64, 3_i64 },
       { 2_i64, 3_i64 },
@@ -142,14 +140,10 @@ module Dicoparser
           when 2
              temp = (value_stack[-1-1].as( Cograph ))
           when 3
-             temp = (value_stack[-1-1].as( Cograph ))
-          when 4
-             temp = (value_stack[-1-1].as( Cograph ))
-          when 5
              temp = (value_stack[-1-2].as( Cograph )).du((value_stack[-1-0].as( Cograph )))
-          when 6
+          when 4
              temp = (value_stack[-1-2].as( Cograph )).oc((value_stack[-1-0].as( Cograph )))
-          when 7
+          when 5
              temp = (value_stack[-1-2].as( Cograph )).sc((value_stack[-1-0].as( Cograph )))
           end
 

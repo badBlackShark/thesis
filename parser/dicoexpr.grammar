@@ -10,8 +10,6 @@ token otimes = /x/;
 
 rule S = operation;
 rule operation = node |
-                 open_paren calculation close_paren |
-                 open_paren calculation close_paren |
                  open_paren calculation close_paren;
 
 rule calculation = operation oplus operation |
