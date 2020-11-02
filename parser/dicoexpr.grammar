@@ -1,0 +1,19 @@
+token space = /[ \n\t]+/ [ skip ];
+token v = /v/;
+token node = /v[1-9]+[0-9]*/;
+token underscore = /_/;
+token open_paren = /\(/;
+token close_paren = /\)/;
+token oplus = /\+/;
+token oslash = /\//;
+token otimes = /x/;
+
+rule S = operation;
+rule operation = node |
+                 open_paren calculation close_paren |
+                 open_paren calculation close_paren |
+                 open_paren calculation close_paren;
+
+rule calculation = operation oplus operation |
+                   operation oslash operation |
+                   operation otimes operation;

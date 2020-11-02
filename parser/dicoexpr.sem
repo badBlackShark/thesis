@@ -1,0 +1,13 @@
+type graph = $$ Cograph $$
+typerules graph = [ S, operation, calculation ]
+
+init = $$require "../graphs/cograph.cr"$$
+
+rule S(0) = $$ $out = $0 $$
+rule operation(0) = $$ $out = Cograph.new($0.string) $$
+rule operation(1) = $$ $out = $1 $$
+rule operation(2) = $$ $out = $1 $$
+rule operation(3) = $$ $out = $1 $$
+rule calculation(0) = $$ $out = $0.du($2) $$
+rule calculation(1) = $$ $out = $0.oc($2) $$
+rule calculation(2) = $$ $out = $0.sc($2) $$

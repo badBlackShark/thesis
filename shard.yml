@@ -1,0 +1,13 @@
+name: thesis
+version: 0.1.0
+
+dependencies:
+  # Parser generator
+  pegasus:
+    github: DanilaFe/pegasus
+
+targets:
+  thesis:
+    main: solver.cr
+
+license: MIT

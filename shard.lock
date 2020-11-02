@@ -1,0 +1,6 @@
+version: 2.0
+shards:
+  pegasus:
+    git: https://github.com/DanilaFe/pegasus.git
+    version: 0.1.0+git.commit.0489d47b191ecf8501787355b948801506e7c70f
+
