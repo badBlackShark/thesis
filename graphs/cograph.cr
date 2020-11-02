@@ -18,7 +18,7 @@ class Cograph
   # This is, more or less, a di-co-tree as described in the paper (page 8).
   getter made_of : Hash(Array(Cograph), Symbol)
 
-  def initialize(name : String, weight : Int32)
+  def initialize(name : String, weight : Int32 = 0)
     unless name =~ /v\d+/
       raise "Error with node #{name}: nodes must be named 'v[number]'."
     end
@@ -31,7 +31,7 @@ class Cograph
     @made_of = Hash(Array(Cograph), Symbol).new
     @made_of[[self]] = :create
 
-    puts "Created cograph with di-co-expression '#{@dicoexpr}'"
+    # puts "Created cograph with di-co-expression '#{@dicoexpr}'"
   end
 
   protected def initialize(@nodes, @edges, @dicoexpr, @made_of)
@@ -44,11 +44,28 @@ class Cograph
       @successors[node] = compute_successors(node)
     end
 
-    puts "Created cograph with di-co-expression '#{@dicoexpr}'"
+    # puts "Created cograph with di-co-expression '#{@dicoexpr}'"
   end
 
   def sources
     @nodes.reject { |name, weight| @predecessors[name]? }
+  end
+
+  def add_weights(weights : Array(Int32))
+    if weights.size != @nodes.keys.size
+      raise "Number of weights doesn't match number of nodes! Expected #{@nodes.keys.size}, got #{weights.size}."
+    end
+    @nodes.keys.sort_by { |name| name[1..-1].to_i }.each_with_index do |key, i|
+      @nodes[key] = weights[i]
+    end
+
+    @made_of.keys.each do |graphs|
+      graphs.each do |graph|
+        graph.nodes.keys.each do |name|
+          graph.nodes[name] = @nodes[name]
+        end
+      end
+    end
   end
 
   # disjoint union
