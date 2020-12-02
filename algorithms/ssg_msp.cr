@@ -1,16 +1,16 @@
 class SSG
   # Solves SSG for a given graph and constraint.
   # Returns the best value achievable, and the elements chosen to achieve that value.
-  def self.solve_for_cograph(graph : Cograph, constraint : Int32)
-    # This is used to find the index of certain di-co-expressions later in the program.
+  def self.solve_for_mspgraph(graph : Mspgraph, constraint : Int32)
+    # This is used to find the index of certain msp-expressions later in the program.
     # We do it here so we don't have to compute it a whole bunch of times.
     searchable = graph.made_of.map do |g, op|
       if op == :create
-        g[0].dicoexpr
+        g[0].mspexpr
       else
-        # The gsub gets rid of parentheses around single vertices. This way the di-co-expression
-        # looks like the di-co-expression of the actual graph
-        "(#{g[0].dicoexpr}) #{op} (#{g[1].dicoexpr})".gsub(/\((v\d+)\)/, "\\1")
+        # The gsub gets rid of parentheses around single vertices. This way the msp-expression
+        # looks like the msp-expression of the actual graph
+        "(#{g[0].mspexpr}) #{op} (#{g[1].mspexpr})".gsub(/\((v\d+)\)/, "\\1")
       end
     end
 
@@ -28,9 +28,9 @@ class SSG
 
   # Computes the F function (as lined out in GKR20) for a given graph and constraint c.
   # Also computes which elements need to be chosen to achieve the result of every field
-  # in the matrix F produces when combined with all the possible di-co-expressions of the graph.
+  # in the matrix F.
   # As lined out above, the `searchable` is only there to save some instructions.
-  private def self.compute_f_and_solution_sets(graph : Cograph, c : Int32, searchable : Array(String))
+  private def self.compute_f_and_solution_sets(graph : Mspgraph, c : Int32, searchable : Array(String))
     f = Array(Array(Bool)).new
     # Solution sets; contains the vertices chosen for any given possible solution.
     # nil indicates an unsolvable problem; [] indicates an empty solution.
@@ -52,10 +52,10 @@ class SSG
             f[i][s] = true
             sol_sets[i][s] = step.first.nodes.keys
           end
-        when :+
-          # If either of those two lines throws an error something went horribly wrong in building the cograph.
-          left_i = searchable.index(step[0].dicoexpr).not_nil!
-          right_i = searchable.index(step[1].dicoexpr).not_nil!
+        when :u
+          # If either of those two lines throws an error something went horribly wrong in building the msp-graph.
+          left_i = searchable.index(step[0].mspexpr).not_nil!
+          right_i = searchable.index(step[1].mspexpr).not_nil!
 
           0.upto(s) do |s_prime|
             0.upto(s) do |s_double_prime|
@@ -65,10 +65,10 @@ class SSG
               end
             end
           end
-        when :/
-          # If either of those two lines throws an error something went horribly wrong in building the cograph.
-          left_i = searchable.index(step[0].dicoexpr).not_nil!
-          right_i = searchable.index(step[1].dicoexpr).not_nil!
+        when :x
+          # If either of those two lines throws an error something went horribly wrong in building the msp-graph.
+          left_i = searchable.index(step[0].mspexpr).not_nil!
+          right_i = searchable.index(step[1].mspexpr).not_nil!
 
           if f[right_i][s]
             f[i][s] = true
@@ -81,14 +81,6 @@ class SSG
                 sol_sets[i][s] = [[sol_sets[left_i][s_prime]].compact + [sol_sets[right_i][f_x2]].compact].flatten
               end
             end
-          end
-        when :x
-          if s == 0
-            f[i][s] = true
-            sol_sets[i][s] = Array(String).new
-          elsif step[0].nodes.values.sum + step[1].nodes.values.sum == s
-            f[i][s] = true
-            sol_sets[i][s] = step[0].nodes.keys + step[1].nodes.keys
           end
         end
       end

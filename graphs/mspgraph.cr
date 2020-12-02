@@ -1,22 +1,21 @@
-# This class implements a cograph that can be produced by the three operations
-# disjoint union (+), series composition (x), and order composition (/). N^+ and N^- are computed
-# automatically.
-# This also computes 'made_of', which can be used to retrace the steps with which this cograph
+# This class implements an msp-graph that can be produced by the two operations
+# parallel composition (u), and series composition (x). N^+ and N^- are computed automatically.
+# This also computes 'made_of', which can be used to retrace the steps with which this msp-graph
 # was built. This is really helpful later when computing solutions for SSG and SSGW.
-class Cograph
+class Mspgraph
   # The weights of the vertices
   getter nodes : Hash(String, Int32)
   getter edges : Array(Array(String))
-  # The expression by which this cograph was built
-  getter dicoexpr : String
+  # The expression by which this msp-graph was built
+  getter mspexpr : String
 
   getter predecessors : Hash(String, Array(String))
   getter successors : Hash(String, Array(String))
 
   # [left side component, right side component] => operator
-  # When the cograph is only a single node, there is no right side component
-  # This is, more or less, a di-co-tree as described in the paper (page 8).
-  getter made_of : Hash(Array(Cograph), Symbol)
+  # When the msp-graph is only a single node, there is no right side component
+  # This is, more or less, an msp-tree as described in the paper (page 15).
+  getter made_of : Hash(Array(Mspgraph), Symbol)
 
   def initialize(name : String, weight : Int32 = 0)
     unless name =~ /v\d+/
@@ -25,18 +24,18 @@ class Cograph
 
     @nodes = {name => weight}
     @edges = Array(Array(String)).new
-    @dicoexpr = name
+    @mspexpr = name
     @predecessors = {name => Array(String).new}
     @successors = {name => Array(String).new}
-    @made_of = Hash(Array(Cograph), Symbol).new
+    @made_of = Hash(Array(Mspgraph), Symbol).new
     @made_of[[self]] = :create
 
-    # puts "Created cograph with di-co-expression '#{@dicoexpr}'"
+    # puts "Created mspgraph with msp-expression '#{@mspexpr}'"
   end
 
-  protected def initialize(@nodes, @edges, @dicoexpr, @made_of)
-    # Removes parentheses around single node di-co-expressions, e.g. (v1) => v1
-    @dicoexpr = @dicoexpr.gsub(/\((v\d+)\)/, "\\1", true)
+  protected def initialize(@nodes, @edges, @mspexpr, @made_of)
+    # Removes parentheses around single node msp-expressions, e.g. (v1) => v1
+    @mspexpr = @mspexpr.gsub(/\((v\d+)\)/, "\\1", true)
     @predecessors = Hash(String, Array(String)).new
     @successors = Hash(String, Array(String)).new
     @nodes.keys.each do |node|
@@ -44,11 +43,15 @@ class Cograph
       @successors[node] = compute_successors(node)
     end
 
-    # puts "Created cograph with di-co-expression '#{@dicoexpr}'"
+    # puts "Created mspgraph with msp-expression '#{@mspexpr}'"
   end
 
   def sources
     @nodes.reject { |name, weight| !@predecessors[name].empty? }
+  end
+
+  def sinks
+    @nodes.reject { |name, weight| !@successors[name].empty? }
   end
 
   def add_weights(weights : Array(Int32))
@@ -68,46 +71,34 @@ class Cograph
     end
   end
 
-  # disjoint union
-  def du(other : Cograph)
+  # Parallel composition
+  def pc(other : Mspgraph)
     check_unique_names(other)
 
-    return Cograph.new(
+    return Mspgraph.new(
       @nodes.merge(other.nodes),
       @edges + other.edges,
-      "(#{@dicoexpr}) + (#{other.dicoexpr})",
-      @made_of.merge(other.made_of).merge({[self, other] => :+})
+      "(#{@mspexpr}) u (#{other.mspexpr})",
+      @made_of.merge(other.made_of).merge({[self, other] => :u})
     )
   end
 
-  # series composition
-  def sc(other : Cograph)
+  # Series composition
+  def sc(other : Mspgraph)
     check_unique_names(other)
 
-    return Cograph.new(
+    return Mspgraph.new(
       @nodes.merge(other.nodes),
-      @edges + other.edges + Array.product(@nodes.keys, other.nodes.keys) + Array.product(other.nodes.keys, @nodes.keys),
-      "(#{@dicoexpr}) x (#{other.dicoexpr})",
+      @edges + other.edges + Array.product(sinks.keys, other.sources.keys),
+      "(#{@mspexpr}) x (#{other.mspexpr})",
       @made_of.merge(other.made_of).merge({[self, other] => :x})
     )
   end
 
-  # order composition
-  def oc(other : Cograph)
-    check_unique_names(other)
-
-    return Cograph.new(
-      @nodes.merge(other.nodes),
-      @edges + other.edges + Array.product(@nodes.keys, other.nodes.keys),
-      "(#{@dicoexpr}) / (#{other.dicoexpr})",
-      @made_of.merge(other.made_of).merge({[self, other] => :/})
-    )
-  end
-
-  private def check_unique_names(other : Cograph)
+  private def check_unique_names(other : Mspgraph)
     @nodes.keys.each do |vertice|
       if other.nodes.keys.includes?(vertice)
-        raise "Nodes not unique! #{vertice} appears at least twice in would be di-co-expression (#{@dicoexpr}) + (#{other.dicoexpr})."
+        raise "Nodes not unique! #{vertice} appears at least twice in would be msp-expression (#{@mspexpr}) + (#{other.mspexpr})."
       end
     end
   end

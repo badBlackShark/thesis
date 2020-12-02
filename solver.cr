@@ -3,14 +3,20 @@ require "./algorithms/*"
 require "./parser/*"
 require "option_parser"
 
-dicoexpr = ""
+expression = ""
 weights = Array(Int32).new
 constraint = 0
 problem = ""
+graph_type = ""
 
 OptionParser.parse do |parser|
   parser.banner = "Usage: solver [arguments]"
-  parser.on("-d EXPRESSION", "--dicoexpr=EXPRESSION", "Inputs a directed co-graph as a di-co-expression. Must be fully parenthesized.") { |expr| dicoexpr = expr }
+  parser.on("-g GRAPHTYPE", "--graph GRAPHTYPE", "Sets whether to solve for a directed Co- or MSP-Graph. Must be \"co“ or \"msp\".") do |graph|
+    graph = graph.downcase
+    raise "Graph type must be either \"co\" or \"msp\"" unless graph == "co" || graph == "msp"
+    graph_type = graph
+  end
+  parser.on("-e EXPRESSION", "--expr=EXPRESSION", "Inputs a graph as an expression. Must be fully parenthesized.") { |expr| expression = expr }
   parser.on("-w WEIGHTS", "--weights=WEIGHTS", "Specifies the weights for the given graph. \
             Number of weights must match the number of nodes in the graph. \
             All weights must be given as one argument in quotes, and must be separated by spaces.\n\
@@ -32,12 +38,28 @@ OptionParser.parse do |parser|
   end
 end
 
-graph = Dicoparser::Pegasus::Generated.process(dicoexpr).as(Cograph)
-graph.add_weights(weights)
+case graph_type
+when "co"
+  graph = Dicoparser::Pegasus::Generated.process(expression).as(Cograph)
+  graph.add_weights(weights)
 
-size, sol = if problem == "SSG"
-  SSG.solve_for_cograph(graph, constraint)
+  size, sol = if problem == "SSG"
+                SSG.solve_for_cograph(graph, constraint)
+              else
+                SSGW.solve_for_cograph(graph, constraint)
+              end
+  puts "The optimal #{problem} solution for the given cograph with di-co-expression \"#{expression}\" and constraint #{constraint} is #{sol} with size #{size}."
+when "msp"
+  graph = Mspparser::Pegasus::Generated.process(expression).as(Mspgraph)
+  graph.add_weights(weights)
+
+  size, sol = if problem == "SSG"
+                SSG.solve_for_mspgraph(graph, constraint)
+              else
+                SSGW.solve_for_mspgraph(graph, constraint)
+              end
+  puts "The optimal #{problem} solution for the given msp-graph with msp-expression \"#{expression}\" and constraint #{constraint} is #{sol} with size #{size}."
 else
-  SSGW.solve_for_cograph(graph, constraint)
+  puts "Graph type not specified!"
+  exit 1
 end
-puts "The optimal #{problem} solution for the given cograph with di-co-expression \"#{dicoexpr}\" and constraint #{constraint} is #{sol} with size #{size}."

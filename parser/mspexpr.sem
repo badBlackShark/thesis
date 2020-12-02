@@ -1,0 +1,10 @@
+type graph = $$ Mspgraph $$
+typerules graph = [ S, operation, calculation ]
+
+init = $$require "../graphs/mspgraph.cr"$$
+
+rule S(0) = $$ $out = $0 $$
+rule operation(0) = $$ $out = Mspgraph.new($0.string) $$
+rule operation(1) = $$ $out = $1 $$
+rule calculation(0) = $$ $out = $0.pc($2) $$
+rule calculation(1) = $$ $out = $0.sc($2) $$

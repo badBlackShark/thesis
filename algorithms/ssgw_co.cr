@@ -15,6 +15,19 @@ class SSGW
     h_prime, h_prime_solutions = compute_h_prime(graph, constraint, searchable)
     h, sol_sets = compute_h_and_solution_sets(graph, constraint, searchable, h_prime, h_prime_solutions)
 
+    # This is only for debugging and checking the very large table for examples
+    # 0.upto(constraint) do |s_prime|
+    #   puts "\ns'=#{s_prime}"
+    #   0.upto(graph.made_of.keys.size - 1) do |i|
+    #     key = graph.made_of.keys[i]
+    #     print "#{key[0].dicoexpr} #{graph.made_of[key]} #{key[1]?.try(&.dicoexpr)}: "
+    #     0.upto(constraint) do |s|
+    #       print "#{h[i][s][s_prime] ? 1 : 0} "
+    #     end
+    #     puts ""
+    #   end
+    # end
+
     constraint.downto(0) do |i|
       0.upto(constraint) do |j|
         if h[-1][i][j]
