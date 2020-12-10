@@ -57,12 +57,15 @@ class SSG
           left_i = searchable.index(step[0].dicoexpr).not_nil!
           right_i = searchable.index(step[1].dicoexpr).not_nil!
 
-          0.upto(s) do |s_prime|
-            0.upto(s) do |s_double_prime|
-              if s_prime + s_double_prime == s && f[left_i][s_prime] && f[right_i][s_double_prime]
-                f[i][s] = true
-                sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][s_double_prime].not_nil!
-              end
+          0.upto(s//2) do |j|
+            s_prime = j
+            s_double_prime = s - j
+            if s_prime + s_double_prime == s && f[left_i][s_prime] && f[right_i][s_double_prime]
+              f[i][s] = true
+              sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][s_double_prime].not_nil!
+            elsif s_prime + s_double_prime == s && f[left_i][s_double_prime] && f[right_i][s_prime]
+              f[i][s] = true
+              sol_sets[i][s] = sol_sets[left_i][s_double_prime].not_nil! + sol_sets[right_i][s_prime].not_nil!
             end
           end
         when :/
