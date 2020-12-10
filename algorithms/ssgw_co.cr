@@ -114,20 +114,18 @@ class SSGW
             left_i = searchable.index(step[0].dicoexpr).not_nil!
             right_i = searchable.index(step[1].dicoexpr).not_nil!
 
-            0.upto(s) do |s_1|
-              0.upto(s) do |s_2|
-                0.upto(s_prime) do |s_1_prime|
-                  0.upto(s_prime) do |s_2_prime|
-                    if (
-                         s_1 + s_2 == s &&
-                         s_1_prime + s_2_prime == s_prime &&
-                         h[left_i][s_1][s_1_prime] &&
-                         h[right_i][s_2][s_2_prime]
-                       )
-                      h[i][s][s_prime] = true
-                      sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_2_prime].not_nil!
-                    end
-                  end
+            0.upto(s // 2) do |n|
+              s_1 = n
+              s_2 = s - n
+              0.upto(s_prime // 2) do |m|
+                s_1_prime = m
+                s_2_prime = s_prime - m
+                if (h[left_i][s_1][s_1_prime] && h[right_i][s_2][s_2_prime])
+                  h[i][s][s_prime] = true
+                  sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_2_prime].not_nil!
+                elsif (h[right_i][s_1][s_1_prime] && h[left_i][s_2][s_2_prime])
+                  h[i][s][s_prime] = true
+                  sol_sets[i][s][s_prime] = sol_sets[right_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_2_prime].not_nil!
                 end
               end
             end
@@ -138,6 +136,8 @@ class SSGW
 
             s_x1 = step[0].nodes.values.sum
             s_x2 = step[1].nodes.values.sum
+            o_x1 = step[0].sources.values.sum
+            o_x2 = step[1].sources.values.sum
 
             # We're going through the 5 options presented in lemma 3.14 one by one here and quitting
             # as soon as we find one that fits.
@@ -157,15 +157,15 @@ class SSGW
 
             # Option 3
             1.upto(s_x2) do |s_2|
-              if s_x1 + s_2 == s && step[0].sources.values.sum == s_prime && h[right_i][s_2][step[1].sources.values.sum]
+              if s_x1 + s_2 == s && o_x1 == s_prime && h[right_i][s_2][o_x2]
                 h[i][s][s_prime] = true
-                sol_sets[i][s][s_prime] = step[0].nodes.keys + sol_sets[right_i][s_2][step[1].sources.values.sum].not_nil!
+                sol_sets[i][s][s_prime] = step[0].nodes.keys + sol_sets[right_i][s_2][o_x2].not_nil!
               end
             end
             next if h[i][s][s_prime]
 
             # Option 4
-            if s_x1 + s_x2 == s && step[0].sources.values.sum == s_prime
+            if s_x1 + s_x2 == s && o_x1 == s_prime
               h[i][s][s_prime] = true
               sol_sets[i][s][s_prime] = step[0].nodes.keys + step[1].nodes.keys
               next
@@ -189,6 +189,8 @@ class SSGW
 
             s_x1 = step[0].nodes.values.sum
             s_x2 = step[1].nodes.values.sum
+            o_x1 = step[0].sources.values.sum
+            o_x2 = step[1].sources.values.sum
 
             # We're going through the 6 options presented in lemma 3.14 one by one here and quitting
             # as soon as we find one that fits.
@@ -208,18 +210,18 @@ class SSGW
 
             # Option 3
             1.upto(s_x2) do |s_2|
-              if s_x1 + s_2 == s && h[right_i][s_2][step[1].sources.values.sum]
+              if s_x1 + s_2 == s && h[right_i][s_2][o_x2]
                 h[i][s][0] = true
-                sol_sets[i][s][0] = step[0].nodes.keys + sol_sets[right_i][s_2][step[1].sources.values.sum].not_nil!
+                sol_sets[i][s][0] = step[0].nodes.keys + sol_sets[right_i][s_2][o_x2].not_nil!
               end
             end
             next if h[i][s][0]
 
             # Option 4
             1.upto(s_x1) do |s_1|
-              if s_1 + s_x2 == s && h[left_i][s_1][step[0].sources.values.sum]
+              if s_1 + s_x2 == s && h[left_i][s_1][o_x1]
                 h[i][s][0] = true
-                sol_sets[i][s][0] = sol_sets[left_i][s_1][step[0].sources.values.sum].not_nil! + step[1].nodes.keys
+                sol_sets[i][s][0] = sol_sets[left_i][s_1][o_x1].not_nil! + step[1].nodes.keys
               end
             end
             next if h[i][s][0]
