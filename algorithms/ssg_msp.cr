@@ -61,7 +61,7 @@ class SSG
             0.upto(s) do |s_double_prime|
               if s_prime + s_double_prime == s && f[left_i][s_prime] && f[right_i][s_double_prime]
                 f[i][s] = true
-                sol_sets[i][s] = [[sol_sets[left_i][s_prime]].compact + [sol_sets[right_i][s_double_prime]].compact].flatten
+                sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][s_double_prime].not_nil!
               end
             end
           end
@@ -78,7 +78,7 @@ class SSG
             1.upto(s) do |s_prime|
               if s_prime + f_x2 == s && f[left_i][s_prime]
                 f[i][s] = true
-                sol_sets[i][s] = [[sol_sets[left_i][s_prime]].compact + [sol_sets[right_i][f_x2]].compact].flatten
+                sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][f_x2].not_nil!
               end
             end
           end

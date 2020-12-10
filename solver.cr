@@ -16,13 +16,13 @@ OptionParser.parse do |parser|
     raise "Graph type must be either \"co\" or \"msp\"" unless graph == "co" || graph == "msp"
     graph_type = graph
   end
-  parser.on("-e EXPRESSION", "--expr=EXPRESSION", "Inputs a graph as an expression. Must be fully parenthesized.") { |expr| expression = expr }
-  parser.on("-w WEIGHTS", "--weights=WEIGHTS", "Specifies the weights for the given graph. \
+  parser.on("-e EXPRESSION", "--expr EXPRESSION", "Inputs a graph as an expression. Must be fully parenthesized.") { |expr| expression = expr }
+  parser.on("-w WEIGHTS", "--weights WEIGHTS", "Specifies the weights for the given graph. \
             Number of weights must match the number of nodes in the graph. \
             All weights must be given as one argument in quotes, and must be separated by spaces.\n\
             E.g.: -w \"1 2 2 3\"") { |raw| weights = raw.split(" ").map(&.to_i) }
-  parser.on("-c CONSTRAINT", "--constraint=CONSTRAINT", "Specifies the weight constraint for the problem.") { |constr| constraint = constr.to_i }
-  parser.on("-p PROBLEM", "--problem=PROBLEM", "Specifies whether SSG or SSGW should be solved. Must be one of those two.") do |probl|
+  parser.on("-c CONSTRAINT", "--constraint CONSTRAINT", "Specifies the weight constraint for the problem.") { |constr| constraint = constr.to_i }
+  parser.on("-p PROBLEM", "--problem PROBLEM", "Specifies whether SSG or SSGW should be solved. Must be one of those two.") do |probl|
     probl = probl.upcase
     raise "Problem must be either \"SSG\" or \"SSGW\"." unless probl == "SSG" || probl == "SSGW"
     problem = probl
@@ -38,6 +38,7 @@ OptionParser.parse do |parser|
   end
 end
 
+start = Time.monotonic
 case graph_type
 when "co"
   graph = Dicoparser::Pegasus::Generated.process(expression).as(Cograph)
@@ -63,3 +64,4 @@ else
   puts "Graph type not specified!"
   exit 1
 end
+puts "Time needed to compute: #{Time.monotonic - start}"
