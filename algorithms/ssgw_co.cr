@@ -123,9 +123,11 @@ class SSGW
                 if (h[left_i][s_1][s_1_prime] && h[right_i][s_2][s_2_prime])
                   h[i][s][s_prime] = true
                   sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_2_prime].not_nil!
+                  break
                 elsif (h[right_i][s_1][s_1_prime] && h[left_i][s_2][s_2_prime])
                   h[i][s][s_prime] = true
-                  sol_sets[i][s][s_prime] = sol_sets[right_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_2_prime].not_nil!
+                  sol_sets[i][s][s_prime] = sol_sets[right_i][s_1][s_1_prime].not_nil! + sol_sets[left_i][s_2][s_2_prime].not_nil!
+                  break
                 end
               end
             end
@@ -156,13 +158,12 @@ class SSGW
             end
 
             # Option 3
-            1.upto(s_x2) do |s_2|
-              if s_x1 + s_2 == s && o_x1 == s_prime && h[right_i][s_2][o_x2]
-                h[i][s][s_prime] = true
-                sol_sets[i][s][s_prime] = step[0].nodes.keys + sol_sets[right_i][s_2][o_x2].not_nil!
-              end
+            s_2 = s - s_x1
+            if s_2 >= 0 && o_x1 == s_prime && h[right_i][s_2][o_x2]
+              h[i][s][s_prime] = true
+              sol_sets[i][s][s_prime] = step[0].nodes.keys + sol_sets[right_i][s_2][o_x2].not_nil!
+              next
             end
-            next if h[i][s][s_prime]
 
             # Option 4
             if s_x1 + s_x2 == s && o_x1 == s_prime
@@ -172,14 +173,30 @@ class SSGW
             end
 
             # Option 5
-            0.upto(s_x1 - 1) do |s_1|
-              0.upto(s_x2) do |s_2|
-                if s_1 + s_2 == s && h[left_i][s_1][s_prime] && h_prime[right_i][s_2]
-                  h[i][s][s_prime] = true
-                  sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_prime].not_nil! + h_prime_solutions[right_i][s_2].not_nil!
-                end
+            0.upto(s // 2) do |n|
+              # break if n > s_x1 + s_x2 # Is only worth if the weights are much smaller than the constraint I think
+              s_1 = n
+              s_2 = s - n
+              if s_1 < s_x1 && s_2 <= s_x2 && h[left_i][s_1][s_prime] && h_prime[right_i][s_2]
+                h[i][s][s_prime] = true
+                sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_prime].not_nil! + h_prime_solutions[right_i][s_2].not_nil!
+                break
+              elsif s_1 <= s_x2 && s_2 < s_x1 && h[right_i][s_1][s_prime] && h_prime[left_i][s_2]
+                h[i][s][s_prime] = true
+                sol_sets[i][s][s_prime] = sol_sets[right_i][s_1][s_prime].not_nil! + h_prime_solutions[left_i][s_2].not_nil!
+                break
               end
             end
+
+            # 1.upto(s_x1 - 1) do |s_1|
+            #   1.upto(s_x2) do |s_2|
+            #     if s_1 + s_2 == s && h[left_i][s_1][s_prime] && h_prime[right_i][s_2]
+            #       h[i][s][s_prime] = true
+            #       sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_prime].not_nil! + h_prime_solutions[right_i][s_2].not_nil!
+            #       break
+            #     end
+            #   end
+            # end
           when :x
             next unless s_prime == 0
 
@@ -209,22 +226,20 @@ class SSGW
             end
 
             # Option 3
-            1.upto(s_x2) do |s_2|
-              if s_x1 + s_2 == s && h[right_i][s_2][o_x2]
-                h[i][s][0] = true
-                sol_sets[i][s][0] = step[0].nodes.keys + sol_sets[right_i][s_2][o_x2].not_nil!
-              end
+            s_2 = s - s_x1
+            if s_2 > 0 && h[right_i][s_2][o_x2]
+              h[i][s][0] = true
+              sol_sets[i][s][0] = step[0].nodes.keys + sol_sets[right_i][s_2][o_x2].not_nil!
+              next
             end
-            next if h[i][s][0]
 
             # Option 4
-            1.upto(s_x1) do |s_1|
-              if s_1 + s_x2 == s && h[left_i][s_1][o_x1]
-                h[i][s][0] = true
-                sol_sets[i][s][0] = sol_sets[left_i][s_1][o_x1].not_nil! + step[1].nodes.keys
-              end
+            s_1 = s - s_x2
+              if s_1 > 0 && h[left_i][s_1][o_x1]
+              h[i][s][0] = true
+              sol_sets[i][s][0] = sol_sets[left_i][s_1][o_x1].not_nil! + step[1].nodes.keys
+              next
             end
-            next if h[i][s][0]
 
             # Option 5
             if s_x1 + s_x2 == s
@@ -234,14 +249,29 @@ class SSGW
             end
 
             # Option 6
-            1.upto(s_x1 - 1) do |s_1|
-              1.upto(s_x2 - 1) do |s_2|
-                if s_1 + s_2 == s && h_prime[left_i][s_1] && h_prime[right_i][s_2]
-                  h[i][s][0] = true
-                  sol_sets[i][s][0] = h_prime_solutions[left_i][s_1].not_nil! + h_prime_solutions[right_i][s_2].not_nil!
-                end
+            1.upto(s // 2) do |n|
+              # break if n > s_x1 + s_x2 # Is only worth if the weights are much smaller than the constraint I think
+              s_1 = n
+              s_2 = s - n
+              if s_1 < s_x1 && s_2 < s_x2 && h_prime[left_i][s_1] && h_prime[right_i][s_2]
+                h[i][s][0] = true
+                sol_sets[i][s][0] = h_prime_solutions[left_i][s_1].not_nil! + h_prime_solutions[right_i][s_2].not_nil!
+                break
+              elsif s_1 < s_x1 && s_2 < s_x2 && h_prime[right_i][s_1] && h_prime[left_i][s_2]
+                h[i][s][0] = true
+                sol_sets[i][s][0] = h_prime_solutions[right_i][s_1].not_nil! + h_prime_solutions[left_i][s_2].not_nil!
+                break
               end
             end
+            # 1.upto(s_x1 - 1) do |s_1|
+            #   1.upto(s_x2 - 1) do |s_2|
+            #     if s_1 + s_2 == s && h_prime[left_i][s_1] && h_prime[right_i][s_2]
+            #       h[i][s][0] = true
+            #       sol_sets[i][s][0] = h_prime_solutions[left_i][s_1].not_nil! + h_prime_solutions[right_i][s_2].not_nil!
+            #       break
+            #     end
+            #   end
+            # end
           end
         end
       end

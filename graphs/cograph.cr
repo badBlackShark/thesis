@@ -10,8 +10,7 @@ class Cograph
   # The expression by which this cograph was built
   getter dicoexpr : String
 
-  getter predecessors : Hash(String, Array(String))
-  getter successors : Hash(String, Array(String))
+  property sources : Hash(String, Int32)
 
   # [left side component, right side component] => operator
   # When the cograph is only a single node, there is no right side component
@@ -26,8 +25,7 @@ class Cograph
     @nodes = {name => weight}
     @edges = Array(Array(String)).new
     @dicoexpr = name
-    @predecessors = {name => Array(String).new}
-    @successors = {name => Array(String).new}
+    @sources = { name => weight }
     @made_of = Hash(Array(Cograph), Symbol).new
     @made_of[[self]] = :create
 
@@ -37,18 +35,9 @@ class Cograph
   protected def initialize(@nodes, @edges, @dicoexpr, @made_of)
     # Removes parentheses around single node di-co-expressions, e.g. (v1) => v1
     @dicoexpr = @dicoexpr.gsub(/\((v\d+)\)/, "\\1", true)
-    @predecessors = Hash(String, Array(String)).new
-    @successors = Hash(String, Array(String)).new
-    @nodes.keys.each do |node|
-      @predecessors[node] = compute_predecessors(node)
-      @successors[node] = compute_successors(node)
-    end
+    @sources = compute_sources
 
     # puts "Created cograph with di-co-expression '#{@dicoexpr}'"
-  end
-
-  def sources
-    @nodes.reject { |name, weight| !@predecessors[name].empty? }
   end
 
   def add_weights(weights : Array(Int32))
@@ -64,8 +53,11 @@ class Cograph
         graph.nodes.keys.each do |name|
           graph.nodes[name] = @nodes[name]
         end
+        graph.sources = graph.compute_sources
       end
     end
+
+    @sources = compute_sources
   end
 
   # disjoint union
@@ -104,31 +96,15 @@ class Cograph
     )
   end
 
+  def compute_sources
+    @nodes.reject { |name, weight| @edges.find { |edge| edge[1] == name } }
+  end
+
   private def check_unique_names(other : Cograph)
     @nodes.keys.each do |vertice|
       if other.nodes.keys.includes?(vertice)
         raise "Nodes not unique! #{vertice} appears at least twice in would be di-co-expression (#{@dicoexpr}) + (#{other.dicoexpr})."
       end
     end
-  end
-
-  private def compute_predecessors(node : String)
-    predecessors = Array(String).new
-
-    @edges.each do |edge|
-      predecessors << edge[0] if edge[1] == node
-    end
-
-    return predecessors
-  end
-
-  private def compute_successors(node : String)
-    successors = Array(String).new
-
-    @edges.each do |edge|
-      successors << edge[1] if edge[0] == node
-    end
-
-    return successors
   end
 end

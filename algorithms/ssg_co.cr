@@ -60,12 +60,14 @@ class SSG
           0.upto(s//2) do |j|
             s_prime = j
             s_double_prime = s - j
-            if s_prime + s_double_prime == s && f[left_i][s_prime] && f[right_i][s_double_prime]
+            if f[left_i][s_prime] && f[right_i][s_double_prime]
               f[i][s] = true
               sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][s_double_prime].not_nil!
-            elsif s_prime + s_double_prime == s && f[left_i][s_double_prime] && f[right_i][s_prime]
+              break
+            elsif f[right_i][s_double_prime] && f[left_i][s_prime]
               f[i][s] = true
-              sol_sets[i][s] = sol_sets[left_i][s_double_prime].not_nil! + sol_sets[right_i][s_prime].not_nil!
+              sol_sets[i][s] = sol_sets[right_i][s_double_prime].not_nil! + sol_sets[left_i][s_prime].not_nil!
+              break
             end
           end
         when :/
@@ -78,11 +80,10 @@ class SSG
             sol_sets[i][s] = sol_sets[right_i][s]
           else
             f_x2 = step[1].nodes.values.sum
-            1.upto(s) do |s_prime|
-              if s_prime + f_x2 == s && f[left_i][s_prime]
-                f[i][s] = true
-                sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][f_x2].not_nil!
-              end
+            s_prime = s - f_x2
+            if s_prime >= 0 && f[left_i][s_prime]
+              f[i][s] = true
+              sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][f_x2].not_nil!
             end
           end
         when :x
