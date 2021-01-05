@@ -122,15 +122,13 @@ class SSGW
             next if h[i][s][s_prime]
 
             # Option 3
-            1.upto(s_x1) do |s_1|
-              # As above, we need to make sure we don't go out of bounds with the sum of sinks
-              if s_1 + s_x2 == s && step[1].sinks.values.sum == s_prime && step[0].sinks.values.sum <= c && h[left_i][s_1][step[0].sinks.values.sum]
-                h[i][s][s_prime] = true
-                sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][step[0].sinks.values.sum].not_nil! + sol_sets[right_i][s_x2][step[1].sinks.values.sum].not_nil!
-                break
-              end
+            s_1 = s - s_x2
+            # As above, we need to make sure we don't go out of bounds with the sum of sinks
+            if s_1 > 0 && step[1].sinks.values.sum == s_prime && step[0].sinks.values.sum <= c && h[left_i][s_1][step[0].sinks.values.sum]
+              h[i][s][s_prime] = true
+              sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][step[0].sinks.values.sum].not_nil! + sol_sets[right_i][s_x2][step[1].sinks.values.sum].not_nil!
+              break
             end
-            next if h[i][s][s_prime]
 
             # Option 4
             # Better for small weights
@@ -148,19 +146,21 @@ class SSGW
             # end
 
             # Better for large weights
-            1.upto(s // 2) do |n|
-              # break if n > s_x1 + s_x2 # Is only worth if the weights are much smaller than the constraint I think
-              s_1 = n
-              s_2 = s - n
-              1.upto(Math.min(step[0].sinks.values.sum - 1, c)) do |s_1_prime|
-                if h[left_i][s_1][s_1_prime] && h[right_i][s_2][s_prime]
-                  h[i][s][s_prime] = true
-                  sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_prime].not_nil!
-                  break
-                elsif h[right_i][s_1][s_1_prime] && h[left_i][s_2][s_prime]
-                  h[i][s][s_prime] = true
-                  sol_sets[i][s][s_prime] = sol_sets[right_i][s_1][s_1_prime].not_nil! + sol_sets[left_i][s_2][s_prime].not_nil!
-                  break
+            if s_prime > 0 && s_prime <= s_x2
+              1.upto(s // 2) do |n|
+                # break if n > s_x1 + s_x2 # Is only worth if the weights are much smaller than the constraint I think
+                s_1 = n
+                s_2 = s - n
+                1.upto(Math.min(step[0].sinks.values.sum - 1, c)) do |s_1_prime|
+                  if h[left_i][s_1][s_1_prime] && h[right_i][s_2][s_prime]
+                    h[i][s][s_prime] = true
+                    sol_sets[i][s][s_prime] = sol_sets[left_i][s_1][s_1_prime].not_nil! + sol_sets[right_i][s_2][s_prime].not_nil!
+                    break
+                  elsif h[right_i][s_1][s_1_prime] && h[left_i][s_2][s_prime]
+                    h[i][s][s_prime] = true
+                    sol_sets[i][s][s_prime] = sol_sets[right_i][s_1][s_1_prime].not_nil! + sol_sets[left_i][s_2][s_prime].not_nil!
+                    break
+                  end
                 end
               end
             end

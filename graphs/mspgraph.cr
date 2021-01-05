@@ -9,8 +9,8 @@ class Mspgraph
   # The expression by which this msp-graph was built
   getter mspexpr : String
 
-  getter predecessors : Hash(String, Array(String))
-  getter successors : Hash(String, Array(String))
+  property sinks : Hash(String, Int32)
+  property sources : Hash(String, Int32)
 
   # [left side component, right side component] => operator
   # When the msp-graph is only a single node, there is no right side component
@@ -25,8 +25,8 @@ class Mspgraph
     @nodes = {name => weight}
     @edges = Array(Array(String)).new
     @mspexpr = name
-    @predecessors = {name => Array(String).new}
-    @successors = {name => Array(String).new}
+    @sinks = {name => weight}
+    @sources = {name => weight}
     @made_of = Hash(Array(Mspgraph), Symbol).new
     @made_of[[self]] = :create
 
@@ -36,22 +36,10 @@ class Mspgraph
   protected def initialize(@nodes, @edges, @mspexpr, @made_of)
     # Removes parentheses around single node msp-expressions, e.g. (v1) => v1
     @mspexpr = @mspexpr.gsub(/\((v\d+)\)/, "\\1", true)
-    @predecessors = Hash(String, Array(String)).new
-    @successors = Hash(String, Array(String)).new
-    @nodes.keys.each do |node|
-      @predecessors[node] = compute_predecessors(node)
-      @successors[node] = compute_successors(node)
-    end
+    @sinks = compute_sinks
+    @sources = compute_sources
 
     # puts "Created mspgraph with msp-expression '#{@mspexpr}'"
-  end
-
-  def sources
-    @nodes.reject { |name, weight| !@predecessors[name].empty? }
-  end
-
-  def sinks
-    @nodes.reject { |name, weight| !@successors[name].empty? }
   end
 
   def add_weights(weights : Array(Int32))
@@ -67,8 +55,13 @@ class Mspgraph
         graph.nodes.keys.each do |name|
           graph.nodes[name] = @nodes[name]
         end
+        graph.sinks = graph.compute_sinks
+        graph.sources = graph.compute_sources
       end
     end
+
+    @sinks = compute_sinks
+    @sources = compute_sources
   end
 
   # Parallel composition
@@ -93,6 +86,14 @@ class Mspgraph
       "(#{@mspexpr}) x (#{other.mspexpr})",
       @made_of.merge(other.made_of).merge({[self, other] => :x})
     )
+  end
+
+  def compute_sinks
+    @nodes.reject { |name, weight| @edges.find { |edge| edge[0] == name } }
+  end
+
+  def compute_sources
+    @nodes.reject { |name, weight| @edges.find { |edge| edge[1] == name } }
   end
 
   private def check_unique_names(other : Mspgraph)
