@@ -66,12 +66,15 @@ class SSGW
           left_i = searchable.index(step[0].dicoexpr).not_nil!
           right_i = searchable.index(step[1].dicoexpr).not_nil!
 
-          0.upto(s) do |s_prime|
-            0.upto(s) do |s_double_prime|
-              if s_prime + s_double_prime == s && h_prime[left_i][s_prime] && h_prime[right_i][s_double_prime]
-                h_prime[i][s] = true
-                sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][s_double_prime].not_nil!
-              end
+          0.upto(s // 2) do |n|
+            s_prime = n
+            s_double_prime = s - n
+            if h_prime[left_i][s_prime] && h_prime[right_i][s_double_prime]
+              h_prime[i][s] = true
+              sol_sets[i][s] = sol_sets[left_i][s_prime].not_nil! + sol_sets[right_i][s_double_prime].not_nil!
+            elsif h_prime[right_i][s_prime] && h_prime[left_i][s_double_prime]
+              h_prime[i][s] = true
+              sol_sets[i][s] = sol_sets[right_i][s_prime].not_nil! + sol_sets[left_i][s_double_prime].not_nil!
             end
           end
         end

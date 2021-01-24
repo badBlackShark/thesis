@@ -43,35 +43,40 @@ case graph_type
 when "co"
   graph = Dicoparser::Pegasus::Generated.process(expression).as(Cograph)
   graph.add_weights(weights)
-
-  # File.open("./times_ssgw_co.txt", "a") do |file|
-  #   0.upto(256) do |c|
-  #     constraint = c*500
-  #     start_it = Time.monotonic
-      size, sol = if problem == "SSG"
-                    SSG.solve_for_cograph(graph, constraint)
-                  else
-                    SSGW.solve_for_cograph(graph, constraint)
-                  end
-      puts "The optimal #{problem} solution for the given cograph with di-co-expression \"#{expression}\" and constraint #{constraint} is #{sol} with size #{size}."
-    #   finish = Time.monotonic - start_it
-    #   txt = "c=#{constraint}: #{finish}"
-    #   puts txt
-    #   file.puts(txt)
-    # end
-  # end
+  size, sol = if problem == "SSG"
+                SSG.solve_for_cograph(graph, constraint)
+              else
+                SSGW.solve_for_cograph(graph, constraint)
+              end
+  puts "The optimal #{problem} solution for the given cograph with di-co-expression \"#{expression}\" and constraint #{constraint} is #{sol} with size #{size}."
+  # nil
 when "msp"
   graph = Mspparser::Pegasus::Generated.process(expression).as(Mspgraph)
   graph.add_weights(weights)
 
-  size, sol = if problem == "SSG"
-                SSG.solve_for_mspgraph(graph, constraint)
-              else
-                SSGW.solve_for_mspgraph(graph, constraint)
-              end
-  puts "The optimal #{problem} solution for the given msp-graph with msp-expression \"#{expression}\" and constraint #{constraint} is #{sol} with size #{size}."
+  # Benchmark code. Comment out all `puts` and comment in all `nil` to run efficiently.
+  # File.open("./times_ssg_msp.txt", "a") do |file|
+  #   0.upto(125) do |c|
+  #     constraint = c*4
+  #     start_it = Time.monotonic
+
+      size, sol = if problem == "SSG"
+                    SSG.solve_for_mspgraph(graph, constraint)
+                  else
+                    SSGW.solve_for_mspgraph(graph, constraint)
+                  end
+      puts "The optimal #{problem} solution for the given msp-graph with msp-expression \"#{expression}\" and constraint #{constraint} is #{sol} with size #{size}."
+      # nil
+
+  #     finish = Time.monotonic - start_it
+  #     txt = "c=#{constraint}: #{finish}"
+  #     puts txt
+  #     file.puts(txt)
+  #   end
+  # end
 else
   puts "Graph type not specified!"
+  # nil
   exit 1
 end
 puts "Combined time needed to compute: #{Time.monotonic - start}"
